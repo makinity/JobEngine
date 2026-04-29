@@ -21,7 +21,7 @@ const defaultValues = {
   notes: "",
 };
 
-export default function JobForm({ applicationId }) {
+export default function JobForm({ applicationId, onSuccess, onCancel }) {
   const router = useRouter();
   const [form, setForm] = useState(defaultValues);
   const [error, setError] = useState("");
@@ -90,8 +90,12 @@ export default function JobForm({ applicationId }) {
         await createApplication(form);
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -113,7 +117,7 @@ export default function JobForm({ applicationId }) {
 
   return (
     <form
-      className="grid gap-6 rounded-lg border border-zinc-200 bg-white p-5 shadow-sm sm:p-6"
+      className={`grid gap-6 ${!onSuccess ? 'rounded-lg border border-zinc-200 bg-white p-5 shadow-sm sm:p-6' : ''}`}
       onSubmit={handleSubmit}
     >
       {error && (
@@ -143,7 +147,7 @@ export default function JobForm({ applicationId }) {
         <label className="grid gap-2 text-sm font-medium text-zinc-800">
           <span>Status</span>
           <select
-            className="h-11 rounded-md border border-zinc-300 bg-white px-3 text-base text-zinc-950 shadow-sm outline-none transition focus:border-zinc-950 focus:ring-4 focus:ring-zinc-200"
+            className="h-11 w-full min-w-0 rounded-md border border-zinc-300 bg-white px-3 text-base text-zinc-950 shadow-sm outline-none transition focus:border-zinc-950 focus:ring-4 focus:ring-zinc-200"
             name="status"
             onChange={updateField}
             value={form.status}
@@ -172,7 +176,7 @@ export default function JobForm({ applicationId }) {
       <label className="grid gap-2 text-sm font-medium text-zinc-800">
         <span>Notes</span>
         <textarea
-          className="min-h-32 rounded-md border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-950 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-zinc-950 focus:ring-4 focus:ring-zinc-200"
+          className="min-h-32 w-full min-w-0 rounded-md border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-950 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-zinc-950 focus:ring-4 focus:ring-zinc-200"
           name="notes"
           onChange={updateField}
           value={form.notes}
@@ -180,13 +184,24 @@ export default function JobForm({ applicationId }) {
       </label>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Link
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50"
-          href="/dashboard"
-        >
-          <ArrowLeft size={16} />
-          Cancel
-        </Link>
+        {onCancel ? (
+          <button
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50"
+            onClick={onCancel}
+            type="button"
+          >
+            <ArrowLeft size={16} />
+            Cancel
+          </button>
+        ) : (
+          <Link
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50"
+            href="/dashboard"
+          >
+            <ArrowLeft size={16} />
+            Cancel
+          </Link>
+        )}
         <Button disabled={isSaving} type="submit">
           <Save size={16} />
           {isSaving ? "Saving..." : "Save job"}

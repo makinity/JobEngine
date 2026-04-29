@@ -100,17 +100,23 @@ export default function AuthForm({ mode = "login" }) {
       });
 
       let result;
-      const text = await response.text();
+      const contentType = response.headers.get("content-type");
       
-      try {
-        result = JSON.parse(text);
-      } catch (e) {
-        console.error("Failed to parse JSON:", text);
-        throw new Error("The server returned an unexpected response. This usually happens when the API crashes or is misconfigured.");
+      if (contentType && contentType.includes("application/json")) {
+        try {
+          result = await response.json();
+        } catch (e) {
+          console.error("Failed to parse JSON despite Content-Type:", e);
+          throw new Error("The server returned an invalid JSON response.");
+        }
+      } else {
+        const text = await response.text();
+        console.error("Non-JSON response:", text);
+        throw new Error(`Server returned an unexpected response (${response.status}). This usually happens when the API crashes.`);
       }
 
       if (!response.ok) {
-        throw new Error(result.error || result.message || "Login failed");
+        throw new Error(result.error || result.message || `Login failed (${response.status})`);
       }
 
       // Store session in localStorage

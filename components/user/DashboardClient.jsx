@@ -6,16 +6,21 @@ import { useMemo, useState } from "react";
 import { useApplications } from "@/hooks/useApplications";
 import JobCard from "./JobCard";
 import Snackbar from "@/components/shared/Snackbar";
+import Modal from "@/components/shared/Modal";
+import JobForm from "./JobForm";
 
 const statusFilters = ["All", "Applied", "Interview", "Offer", "Rejected"];
 
 export default function DashboardClient() {
-  const { applications, error, isLoading, removeApplication } =
+  const { applications, error, isLoading, refreshApplications, removeApplication } =
     useApplications();
   const [deletingId, setDeletingId] = useState(null);
   const [deleteError, setDeleteError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editJobId, setEditJobId] = useState(null);
+  const [jobToDelete, setJobToDelete] = useState(null);
 
   const statusCounts = useMemo(() => {
     return applications.reduce(
@@ -52,17 +57,12 @@ export default function DashboardClient() {
   const hasFilters = query.trim() || statusFilter !== "All";
 
   async function handleDelete(application) {
-    const label = application.company || "this application";
-
-    if (!window.confirm(`Delete ${label}? This cannot be undone.`)) {
-      return;
-    }
-
     setDeletingId(application.id);
     setDeleteError("");
 
     try {
       await removeApplication(application.id);
+      setJobToDelete(null);
     } catch (err) {
       setDeleteError(err.message);
     } finally {
@@ -84,13 +84,14 @@ export default function DashboardClient() {
             {applications.length} total jobs tracked
           </p>
         </div>
-        <Link
+        <button
           className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
-          href="/add-job"
+          onClick={() => setIsAddModalOpen(true)}
+          type="button"
         >
           <Plus size={16} />
           Add job
-        </Link>
+        </button>
       </div>
 
       <section className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
@@ -201,13 +202,14 @@ export default function DashboardClient() {
           <p className="mt-2 text-sm text-zinc-600">
             Add your first job application to start tracking progress.
           </p>
-          <Link
+          <button
             className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
-            href="/add-job"
+            onClick={() => setIsAddModalOpen(true)}
+            type="button"
           >
             <Plus size={16} />
             Add job
-          </Link>
+          </button>
         </div>
       ) : filteredApplications.length === 0 ? (
         <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center">
@@ -235,11 +237,70 @@ export default function DashboardClient() {
               deleting={deletingId === application.id}
               job={application}
               key={application.id}
-              onDelete={() => handleDelete(application)}
+              onDelete={() => setJobToDelete(application)}
+              onEdit={() => setEditJobId(application.id)}
             />
           ))}
         </section>
       )}
+
+      <Modal
+        open={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Add new job"
+      >
+        <JobForm 
+          onSuccess={() => {
+            setIsAddModalOpen(false);
+            refreshApplications();
+          }}
+          onCancel={() => setIsAddModalOpen(false)}
+        />
+      </Modal>
+
+      <Modal
+        open={!!editJobId}
+        onClose={() => setEditJobId(null)}
+        title="Edit job"
+      >
+        <JobForm 
+          applicationId={editJobId}
+          onSuccess={() => {
+            setEditJobId(null);
+            refreshApplications();
+          }}
+          onCancel={() => setEditJobId(null)}
+        />
+      </Modal>
+
+      <Modal
+        open={!!jobToDelete}
+        onClose={() => setJobToDelete(null)}
+        title="Delete application"
+      >
+        <div className="flex flex-col gap-6">
+          <p className="text-base text-zinc-600">
+            Are you sure you want to delete the application for <strong>{jobToDelete?.company || "this company"}</strong>? This action cannot be undone.
+          </p>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50"
+              onClick={() => setJobToDelete(null)}
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-red-600 px-4 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
+              disabled={deletingId === jobToDelete?.id}
+              onClick={() => handleDelete(jobToDelete)}
+              type="button"
+            >
+              {deletingId === jobToDelete?.id ? "Deleting..." : "Yes, delete"}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </main>
   );
 }

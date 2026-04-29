@@ -2,7 +2,7 @@ import StatusBadge from "./StatusBadge";
 import Link from "next/link";
 import { CalendarDays, MapPin, Pencil, Trash2 } from "lucide-react";
 
-export default function JobCard({ deleting = false, job, onDelete }) {
+export default function JobCard({ deleting = false, job, onDelete, onEdit }) {
   return (
     <article className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-zinc-300">
       <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
@@ -40,13 +40,14 @@ export default function JobCard({ deleting = false, job, onDelete }) {
         </div>
 
         <div className="flex gap-2 lg:justify-end">
-          <Link
+          <button
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-300 px-3 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50"
-            href={`/edit-job/${job.id}`}
+            onClick={onEdit}
+            type="button"
           >
             <Pencil size={15} />
             Edit
-          </Link>
+          </button>
           <button
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-red-200 px-3 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={deleting}
