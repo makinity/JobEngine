@@ -7,7 +7,7 @@ import {
 import { requireAuth } from "@/lib/serverSupabase";
 import { applicationSchema, normalizeApplication } from "@/lib/validation";
 
-export async function GET(_request, { params }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAuth(_request);
 
   if (auth.error) {
@@ -37,7 +37,7 @@ export async function GET(_request, { params }) {
   return Response.json({ application: data });
 }
 
-export async function PUT(request, { params }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAuth(request);
 
   if (auth.error) {
@@ -74,7 +74,7 @@ export async function PUT(request, { params }) {
   return Response.json({ application: data });
 }
 
-export async function DELETE(_request, { params }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAuth(_request);
 
   if (auth.error) {

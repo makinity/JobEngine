@@ -1,7 +1,7 @@
 import { jsonError } from "@/lib/apiErrors";
 import { requireAdmin } from "@/lib/serverSupabase";
 
-export async function DELETE(_request, { params }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAdmin(_request);
 
   if (auth.error) {

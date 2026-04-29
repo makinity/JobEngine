@@ -1,7 +1,7 @@
 import { jsonError } from "@/lib/apiErrors";
 import { requireAdmin } from "@/lib/serverSupabase";
 
-export async function GET(request) {
+export async function GET(request: Request) {
   const auth = await requireAdmin(request);
 
   if (auth.error) {

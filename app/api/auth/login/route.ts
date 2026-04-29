@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabaseClient";
 import { jsonError } from "@/lib/apiErrors";
 
-export async function POST(request) {
+export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => null);
     const { email, password } = body || {};
@@ -52,7 +52,7 @@ export async function POST(request) {
         headers: { "Content-Type": "application/json" }
       }
     );
-  } catch (err) {
+  } catch (err: any) {
     console.error("CRITICAL: Server error in login API:", err);
     return jsonError("Internal server error during login.", 500, err.message);
   }

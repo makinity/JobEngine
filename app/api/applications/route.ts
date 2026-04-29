@@ -7,7 +7,7 @@ import {
 import { requireAuth } from "@/lib/serverSupabase";
 import { applicationSchema, normalizeApplication } from "@/lib/validation";
 
-export async function GET(request) {
+export async function GET(request: Request) {
   const auth = await requireAuth(request);
 
   if (auth.error) {
@@ -36,7 +36,7 @@ export async function GET(request) {
   return Response.json({ applications: data ?? [] });
 }
 
-export async function POST(request) {
+export async function POST(request: Request) {
   const auth = await requireAuth(request);
 
   if (auth.error) {
