@@ -99,15 +99,26 @@ export default function AuthForm({ mode = "login" }) {
         body: JSON.stringify({ email, password }),
       });
 
-      const result = await response.json();
+      let result;
+      const text = await response.text();
+      
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        console.error("Failed to parse JSON:", text);
+        throw new Error("The server returned an unexpected response. This usually happens when the API crashes or is misconfigured.");
+      }
 
       if (!response.ok) {
-        throw new Error(result.error || "Login failed");
+        throw new Error(result.error || result.message || "Login failed");
       }
 
       // Store session in localStorage
       localStorage.setItem("job-tracker-user", JSON.stringify(result.user));
       
+      // Also set cookie for middleware
+      document.cookie = `job-tracker-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
+
       if (result.user.role === "admin") {
         router.replace("/admin");
       } else {

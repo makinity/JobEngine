@@ -57,7 +57,7 @@ export async function POST(request) {
 
   const { data, error } = await auth.supabase
     .from("applications")
-    .insert(payload)
+    .insert([{ ...body, user_id: auth.user.id }])
     .select()
     .single();
 

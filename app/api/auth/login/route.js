@@ -9,7 +9,12 @@ export async function POST(request) {
     return jsonError("Email and password are required.", 400);
   }
 
-  // 1. Check the public.users table for the user and password
+  // 1. Check for Supabase configuration
+  if (!supabase) {
+    return jsonError("Supabase environment variables are missing. Please check your configuration.", 500);
+  }
+
+  // 2. Check the public.users table for the user and password
   const { data: user, error } = await supabase
     .from("users")
     .select("id, email, role, password, name")
@@ -17,11 +22,12 @@ export async function POST(request) {
     .maybeSingle();
 
   if (error) {
+    console.error("Login Error:", error);
     return jsonError("Database error during login.", 500, error.message);
   }
 
   if (!user) {
-    return jsonError("Invalid login credentials", 401);
+    return jsonError("Invalid email or password", 401);
   }
 
   // 2. Verify the password (using plaintext as seen in your screenshot)
